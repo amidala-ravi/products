@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <Console name="STDOUT" target="SYSTEM_OUT">
+            <PatternLayout pattern="%X{traceId} %-5p %d [%t] %c app=products version=${releaseVersion} : %m%n"/>
+        </Console>
+        <RollingRandomAccessFile name="App-File-Appender" fileName="/var/log/philips/products/products.log" filePattern="/var/log/philips/products/archive/products-%i.log.gz">
+            <PatternLayout>
+                <Pattern>%X{traceId} %-5p %d [%t] %c app=products version${releaseVersion} : %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10" stopCustomActionsOnError="true">
+                <Delete basePath="/var/log/philips/products/archive/" maxDepth="1" followLinks="false">
+                    <IfFileName glob="products*.log.gz" />
+                    <IfLastModified age="7d" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingRandomAccessFile>
+        <RollingRandomAccessFile name="SpringBoot-File-Appender" fileName="/var/log/philips/products/springbootproducts.log" filePattern="/var/log/philips/ordermods/archive/springbootproducts-%i.log.gz">
+            <PatternLayout>
+                <Pattern>%X{traceId} %-5p %d [%t] %c app=products version=${releaseVersion} : %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10" stopCustomActionsOnError="true">
+                <Delete basePath="/var/log/philips/products/archive/" maxDepth="1" followLinks="false">
+                    <IfFileName glob="springbootproducts*.log.gz" />
+                    <IfLastModified age="7d" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingRandomAccessFile>
+    </Appenders>
+    <Loggers>
+        <asyncLogger name="org.apache.log4j.xml" level="info"/>
+        <asyncLogger name="com.netflix" level="error"/>
+        <asyncLogger name="com.philips" level="info"/>
+        <root level="info">
+            <AppenderRef ref="STDOUT"/>
+            <AppenderRef ref="App-File-Appender"/>
+            <AppenderRef ref="SpringBoot-File-Appender"/>
+        </root>
+    </Loggers>
+</Configuration>

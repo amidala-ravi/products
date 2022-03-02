@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductRepositoryImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">products</a> &gt; <a href="index.source.html" class="el_package">com.philips.products.repository</a> &gt; <span class="el_source">ProductRepositoryImpl.java</span></div><h1>ProductRepositoryImpl.java</h1><pre class="source lang-java linenums">package com.philips.products.repository;
+
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
+import com.amazonaws.services.dynamodbv2.document.DeleteItemOutcome;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
+import com.amazonaws.services.dynamodbv2.document.Table;
+import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.philips.products.models.ProductCatalog;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Repository;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+@Repository
+<span class="fc" id="L31">@AllArgsConstructor</span>
+<span class="nc" id="L32">@NoArgsConstructor</span>
+@Qualifier(&quot;ProductServiceImpl&quot;)
+public class ProductRepositoryImpl implements ProductRepository {
+
+<span class="fc" id="L36">    private static final Logger LOG = LoggerFactory.getLogger(ProductRepositoryImpl.class);</span>
+    private DynamoDB dynamoDB;
+<span class="fc" id="L38">    public static String tableName=&quot;product.catalog&quot;;</span>
+<span class="nc" id="L39">    public ProductRepositoryImpl(DynamoDB dynamoDB) {</span>
+<span class="nc" id="L40">        this.dynamoDB = dynamoDB;</span>
+<span class="nc" id="L41">    }</span>
+
+    @Autowired
+    @Qualifier(&quot;DynamoDBConfiguration&quot;)
+    private DynamoDBMapper dynamoDBMapper;
+
+    @Override
+    public void saveProductInfo(ProductCatalog prodcutsInfo) {
+<span class="fc" id="L49">        dynamoDBMapper.save(prodcutsInfo);</span>
+<span class="fc" id="L50">    }</span>
+
+    @Override
+    public Optional&lt;ProductCatalog&gt; getProductInfo(String id) {
+<span class="nc" id="L54">        LOG.info(&quot;Repository get the product info for id={}&quot;, id);</span>
+<span class="nc" id="L55">        Map&lt;String, AttributeValue&gt; eav = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L56">        eav.put(&quot;:id&quot;, new AttributeValue().withS(id));</span>
+
+<span class="nc" id="L58">        DynamoDBQueryExpression&lt;ProductCatalog&gt; queryExpression = new DynamoDBQueryExpression&lt;ProductCatalog&gt;()</span>
+<span class="nc" id="L59">                .withKeyConditionExpression(&quot;id = :id&quot;)</span>
+<span class="nc" id="L60">                .withExpressionAttributeValues(eav)</span>
+<span class="nc" id="L61">                .withScanIndexForward(false)</span>
+<span class="nc" id="L62">                .withConsistentRead(false);</span>
+
+<span class="nc" id="L64">        return dynamoDBMapper.query(ProductCatalog.class, queryExpression).stream().findFirst();</span>
+    }
+
+    @Override
+    public void deleteProductInfo(String id) {
+        try {
+<span class="nc" id="L70">            Table table = dynamoDB.getTable(tableName);</span>
+<span class="nc" id="L71">            DeleteItemSpec deleteItemSpec = new DeleteItemSpec()</span>
+<span class="nc" id="L72">                    .withPrimaryKey(new PrimaryKey(&quot;id&quot;, id));</span>
+<span class="nc" id="L73">            DeleteItemOutcome deleteItemOutcome =  table.deleteItem(deleteItemSpec);</span>
+<span class="nc" id="L74">            LOG.info(&quot;Successfully deleted the product record for id = {} and deleteItemOutcome={}&quot;, id, deleteItemOutcome);</span>
+<span class="nc" id="L75">        } catch (AmazonServiceException e) {</span>
+<span class="nc" id="L76">            LOG.info(&quot;Error while deleting the record error={}&quot;, e.getErrorMessage());</span>
+<span class="nc" id="L77">        }</span>
+
+<span class="nc" id="L79">    }</span>
+
+    @Override
+    public List&lt;ProductCatalog&gt; getAllProductInfo() {
+<span class="nc" id="L83">        DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();</span>
+<span class="nc" id="L84">        List&lt;ProductCatalog&gt; scanResult = dynamoDBMapper.scan(ProductCatalog.class, scanExpression);</span>
+<span class="nc" id="L85">        LOG.info(&quot;All products count={} and data={}&quot;, scanResult.size(), scanResult);</span>
+<span class="nc" id="L86">        return scanResult;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

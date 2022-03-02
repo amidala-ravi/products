@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.philips.products.controller.ProductsControllerTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2022-03-02T15:44:19" hostname="APG0J1WV1D061C" time="22.857">
+  <properties/>
+  <testcase name="postProductDetails400Test" classname="com.philips.products.controller.ProductsControllerTest" time="22.065"/>
+  <testcase name="getAllProductsList500ErrorTest" classname="com.philips.products.controller.ProductsControllerTest" time="0.172"/>
+  <testcase name="deleteProductInfo204Test" classname="com.philips.products.controller.ProductsControllerTest" time="0.251"/>
+  <testcase name="getProductInfo200OKTest" classname="com.philips.products.controller.ProductsControllerTest" time="0.133"/>
+  <testcase name="postProductDetails201Test" classname="com.philips.products.controller.ProductsControllerTest" time="0.094"/>
+  <testcase name="deleteProductInfoNotFoundTest" classname="com.philips.products.controller.ProductsControllerTest" time="0.029"/>
+  <testcase name="getProductInfo400EmptyTest" classname="com.philips.products.controller.ProductsControllerTest" time="0.042"/>
+  <testcase name="getAllProductsList200OKTest" classname="com.philips.products.controller.ProductsControllerTest" time="0.06"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

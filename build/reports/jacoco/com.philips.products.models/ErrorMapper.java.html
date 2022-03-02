@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ErrorMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">products</a> &gt; <a href="index.source.html" class="el_package">com.philips.products.models</a> &gt; <span class="el_source">ErrorMapper.java</span></div><h1>ErrorMapper.java</h1><pre class="source lang-java linenums">package com.philips.products.models;
+
+import com.philips.products.models.ErrorMessage;
+import com.philips.products.models.ProductCatalog;
+import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * Class to map the errors and set the error messages for input validation from POST end-point
+ */
+@Component
+<span class="fc" id="L19">@NoArgsConstructor</span>
+public class ErrorMapper {
+
+    private static final String ERROR_MESSAGE = &quot;Validation failed&quot;;
+    private static final HashMap&lt;String, String&gt; ERROR_MAP;
+
+    static {
+<span class="fc" id="L26">        ERROR_MAP = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L27">        ERROR_MAP.put(&quot;NotNull&quot;, &quot;MISSING_FIELD&quot;);</span>
+<span class="fc" id="L28">        ERROR_MAP.put(&quot;NotEmpty&quot;, &quot;MISSING_FIELD&quot;);</span>
+<span class="fc" id="L29">        ERROR_MAP.put(&quot;NotBlank&quot;, &quot;MISSING_FIELD&quot;);</span>
+<span class="fc" id="L30">    }</span>
+
+    public ErrorMessage mapErrors(final ProductCatalog request, final Errors errors) {
+<span class="nc" id="L33">        List&lt;ErrorMessage.Error&gt; errorList = errors</span>
+<span class="nc" id="L34">                .getAllErrors()</span>
+<span class="nc" id="L35">                .stream()</span>
+<span class="nc" id="L36">                .map(this::mapToError)</span>
+<span class="nc" id="L37">                .collect(Collectors.toList());</span>
+<span class="nc" id="L38">        ErrorMessage errorMessage = new ErrorMessage();</span>
+<span class="nc" id="L39">        errorMessage.setMessage(ERROR_MESSAGE);</span>
+<span class="nc" id="L40">        errorMessage.setErrors(errorList);</span>
+<span class="nc" id="L41">        return errorMessage;</span>
+    }
+
+    private ErrorMessage.Error mapToError(ObjectError objectError) {
+<span class="nc" id="L45">        FieldError fieldError = (FieldError) objectError;</span>
+<span class="nc" id="L46">        ErrorMessage.Error errorResponse = new ErrorMessage.Error();</span>
+<span class="nc" id="L47">        errorResponse.setField(fieldError.getField());</span>
+<span class="nc" id="L48">        errorResponse.setCode(ERROR_MAP.get(fieldError.getCode()));</span>
+<span class="nc" id="L49">        errorResponse.setMessage(fieldError.getDefaultMessage());</span>
+<span class="nc" id="L50">        return errorResponse;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

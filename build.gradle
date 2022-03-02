@@ -1,0 +1,91 @@
+plugins {
+	id 'org.springframework.boot' version '2.6.4'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+	id 'jacoco'
+}
+
+group = 'com.philips'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+
+compileJava {
+	options.compilerArgs << '-Xlint:unchecked'
+	options.fork = true
+}
+
+compileTestJava {
+	options.compilerArgs << '-Xlint:deprecation'
+	options.fork = true
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	set('springCloudVersion', "2021.0.1")
+}
+
+dependencies {
+	//implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	//implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+	//implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-server'
+	implementation("javax.validation:validation-api:2.0.1.Final")
+	implementation "org.projectlombok:lombok:1.18.20"
+	annotationProcessor("org.projectlombok:lombok")
+	implementation "com.amazonaws:aws-java-sdk-dynamodb:1.12.167"
+
+	implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+	testImplementation "org.testcontainers:testcontainers:1.15.2"
+	testImplementation "org.testcontainers:junit-jupiter:1.15.2"
+
+}
+
+configurations {
+	all {
+		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+	}
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+jacocoTestReport {
+	reports {
+		xml.enabled true
+		html.enabled true
+		html.destination file("$buildDir/reports/jacoco")
+	}
+
+	afterEvaluate {
+		classDirectories.from = files(classDirectories.files.collect {
+			fileTree(dir: it,
+					exclude: [
+							'**/configuration/**',
+							'**/model/**'
+					])
+		})
+	}
+}
+
+test {
+	jacoco {
+		destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
+		classDumpDir = file("$buildDir/jacoco/classpathdumps")
+	}
+	finalizedBy jacocoTestReport
+}
